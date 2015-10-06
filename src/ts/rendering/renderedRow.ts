@@ -370,6 +370,38 @@ module ag.grid {
         private createRowContainer() {
             var vRow = new ag.vdom.VHtmlElement('div');
             var that = this;
+            var hoverClass = {
+              name: 'ag-hover',
+              add(element: HTMLDivElement) {
+                element.className += ` ${this.name}`;
+              },
+
+              remove(row: HTMLDivElement) {
+                var classList = row.className.split(' ');
+
+                classList.splice(classList.indexOf(this.name), 1);
+                row.className = classList.join(' ');
+              },
+
+              getRow(container: HTMLDivElement, rowId: string) {
+                return <HTMLDivElement>container.querySelector(`[row='${rowId}']`)
+              }
+            }
+
+            var setRowHover = function (vRow: any, isHovered: boolean) {
+              var rowId = vRow.getAttribute('row');
+              var eBodyRow = hoverClass.getRow(<HTMLDivElement>that.eBodyContainer, rowId);
+              var ePinnedRow = hoverClass.getRow(<HTMLDivElement>that.ePinnedContainer, rowId);
+
+              if (isHovered) {
+                hoverClass.add(eBodyRow);
+                hoverClass.add(ePinnedRow);
+              } else {
+                hoverClass.remove(eBodyRow);
+                hoverClass.remove(ePinnedRow);
+              }
+            };
+
             vRow.addEventListener("click", function (event: any) {
                 var agEvent = that.createEvent(event, this);
                 that.eventService.dispatchEvent(Events.EVENT_ROW_CLICKED, agEvent);
@@ -381,6 +413,12 @@ module ag.grid {
             vRow.addEventListener("dblclick", function (event: any) {
                 var agEvent = that.createEvent(event, this);
                 that.eventService.dispatchEvent(Events.EVENT_ROW_DOUBLE_CLICKED, agEvent);
+            });
+            vRow.addEventListener("mouseenter", function (event: any) {
+              setRowHover(this, true);
+            });
+            vRow.addEventListener("mouseleave", function (event: any) {
+              setRowHover(this, false);
             });
 
             return vRow;
