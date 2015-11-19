@@ -360,6 +360,9 @@ module ag.grid {
               var eBodyRow = hoverClass.getRow(<HTMLDivElement>that.eBodyContainer, rowId);
               var ePinnedRow = hoverClass.getRow(<HTMLDivElement>that.ePinnedContainer, rowId);
 
+              if (!eBodyRow || !ePinnedRow)
+                return
+
               if (isHovered) {
                 hoverClass.add(eBodyRow);
                 hoverClass.add(ePinnedRow);

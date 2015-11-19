@@ -4652,6 +4652,8 @@ var ag;
                     var rowId = vRow.getAttribute('row');
                     var eBodyRow = hoverClass.getRow(that.eBodyContainer, rowId);
                     var ePinnedRow = hoverClass.getRow(that.ePinnedContainer, rowId);
+                    if (!eBodyRow || !ePinnedRow)
+                        return;
                     if (isHovered) {
                         hoverClass.add(eBodyRow);
                         hoverClass.add(ePinnedRow);
