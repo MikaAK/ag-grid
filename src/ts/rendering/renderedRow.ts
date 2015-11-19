@@ -340,8 +340,10 @@ module ag.grid {
             var hoverClass = {
               name: 'ag-hover',
               add(element: HTMLDivElement) {
-                if (element) {
-                  element.className += ` ${this.name}`;
+                var classList = element.className.split(' ');
+
+                if (element && classList.indexOf(this.name) < 0) {
+                  element.className = classList.concat(this.name).join(' ');
                 }
               },
 
