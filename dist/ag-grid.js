@@ -3557,8 +3557,7 @@ var ag;
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var ag;
 (function (ag) {
@@ -4635,6 +4634,33 @@ var ag;
             RenderedRow.prototype.createRowContainer = function () {
                 var vRow = new ag.vdom.VHtmlElement('div');
                 var that = this;
+                var hoverClass = {
+                    name: 'ag-hover',
+                    add: function (element) {
+                        element.className += " " + this.name;
+                    },
+                    remove: function (row) {
+                        var classList = row.className.split(' ');
+                        classList.splice(classList.indexOf(this.name), 1);
+                        row.className = classList.join(' ');
+                    },
+                    getRow: function (container, rowId) {
+                        return container.querySelector("[row='" + rowId + "']");
+                    }
+                };
+                var setRowHover = function (vRow, isHovered) {
+                    var rowId = vRow.getAttribute('row');
+                    var eBodyRow = hoverClass.getRow(that.eBodyContainer, rowId);
+                    var ePinnedRow = hoverClass.getRow(that.ePinnedContainer, rowId);
+                    if (isHovered) {
+                        hoverClass.add(eBodyRow);
+                        hoverClass.add(ePinnedRow);
+                    }
+                    else {
+                        hoverClass.remove(eBodyRow);
+                        hoverClass.remove(ePinnedRow);
+                    }
+                };
                 vRow.addEventListener("click", function (event) {
                     var agEvent = that.createEvent(event, this);
                     that.eventService.dispatchEvent(grid.Events.EVENT_ROW_CLICKED, agEvent);
@@ -4645,6 +4671,12 @@ var ag;
                 vRow.addEventListener("dblclick", function (event) {
                     var agEvent = that.createEvent(event, this);
                     that.eventService.dispatchEvent(grid.Events.EVENT_ROW_DOUBLE_CLICKED, agEvent);
+                });
+                vRow.addEventListener("mouseenter", function (event) {
+                    setRowHover(this, true);
+                });
+                vRow.addEventListener("mouseleave", function (event) {
+                    setRowHover(this, false);
                 });
                 return vRow;
             };
@@ -7745,7 +7777,8 @@ var ag;
                 if (params) {
                     this.setupPanels(params);
                 }
-                this.setOverlayVisible(false);
+                this.overlays = params.overlays;
+                this.setupOverlays();
             }
             BorderLayout.prototype.addSizeChangeListener = function (listener) {
                 this.sizeChangeListeners.push(listener);
@@ -7768,7 +7801,6 @@ var ag;
                 this.eEastChildLayout = this.setupPanel(params.east, this.eEastWrapper);
                 this.eWestChildLayout = this.setupPanel(params.west, this.eWestWrapper);
                 this.eCenterChildLayout = this.setupPanel(params.center, this.eCenterWrapper);
-                this.setupPanel(params.overlay, this.eOverlayWrapper);
             };
             BorderLayout.prototype.setupPanel = function (content, ePanel) {
                 if (!ePanel) {
@@ -7890,11 +7922,31 @@ var ag;
                 }
                 this.doLayout();
             };
-            BorderLayout.prototype.setOverlayVisible = function (visible) {
-                if (this.eOverlayWrapper) {
-                    this.eOverlayWrapper.style.display = visible ? '' : 'none';
+            BorderLayout.prototype.setupOverlays = function () {
+                // if no overlays, just remove the panel
+                if (!this.overlays) {
+                    this.eOverlayWrapper.parentNode.removeChild(this.eOverlayWrapper);
+                    return;
                 }
-                this.doLayout();
+                this.hideOverlay();
+                //
+                //this.setOverlayVisible(false);
+            };
+            BorderLayout.prototype.hideOverlay = function () {
+                _.removeAllChildren(this.eOverlayWrapper);
+                this.eOverlayWrapper.style.display = 'none';
+            };
+            BorderLayout.prototype.showOverlay = function (key) {
+                var overlay = this.overlays ? this.overlays[key] : null;
+                if (overlay) {
+                    _.removeAllChildren(this.eOverlayWrapper);
+                    this.eOverlayWrapper.style.display = '';
+                    this.eOverlayWrapper.appendChild(overlay);
+                }
+                else {
+                    console.log('ag-Grid: unknown overlay');
+                    this.hideOverlay();
+                }
             };
             BorderLayout.prototype.setSouthVisible = function (visible) {
                 if (this.eSouthWrapper) {
@@ -7952,7 +8004,9 @@ var ag;
                 }
                 this.findElements();
                 this.layout = new grid.BorderLayout({
-                    overlay: _.loadTemplate(this.createTemplate()),
+                    overlays: {
+                        loading: _.loadTemplate(this.createOverlayTemplate())
+                    },
                     center: this.eRoot,
                     dontFill: this.forPrint,
                     name: 'eGridPanel'
@@ -7975,7 +8029,7 @@ var ag;
             GridPanel.prototype.getFloatingBottomContainer = function () {
                 return this.eFloatingBottomContainer;
             };
-            GridPanel.prototype.createTemplate = function () {
+            GridPanel.prototype.createOverlayTemplate = function () {
                 var localeTextFunc = this.gridOptionsWrapper.getLocaleTextFunc();
                 return loadingHtml.replace('[LOADING...]', localeTextFunc('loadingOoo', 'Loading...'));
             };
@@ -8053,7 +8107,12 @@ var ag;
                 // otherwise, col is already in view, so do nothing
             };
             GridPanel.prototype.showLoading = function (loading) {
-                this.layout.setOverlayVisible(loading);
+                if (loading) {
+                    this.layout.showOverlay('loading');
+                }
+                else {
+                    this.layout.hideOverlay();
+                }
             };
             GridPanel.prototype.getWidthForSizeColsToFit = function () {
                 var availableWidth = this.eBody.clientWidth;

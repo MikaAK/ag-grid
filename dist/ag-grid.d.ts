@@ -212,7 +212,7 @@ declare module ag.grid {
         getIsScrollLag(): () => boolean;
         getSortingOrder(): string[];
         getSlaveGrids(): GridOptions[];
-        getGroupRowRenderer(): Object | Function;
+        getGroupRowRenderer(): Function | Object;
         getRowHeight(): number;
         getHeaderHeight(): number;
         setHeaderHeight(headerHeight: number): void;
@@ -1378,6 +1378,7 @@ declare module ag.grid {
         private childPanels;
         private centerHeightLastTime;
         private sizeChangeListeners;
+        private overlays;
         constructor(params: any);
         addSizeChangeListener(listener: Function): void;
         fireSizeChanged(): void;
@@ -1392,7 +1393,9 @@ declare module ag.grid {
         getCentreHeight(): number;
         private layoutWidth();
         setEastVisible(visible: any): void;
-        setOverlayVisible(visible: any): void;
+        private setupOverlays();
+        hideOverlay(): void;
+        showOverlay(key: string): void;
         setSouthVisible(visible: any): void;
     }
 }
@@ -1431,7 +1434,7 @@ declare module ag.grid {
         getFloatingTopContainer(): HTMLElement;
         getPinnedFloatingBottom(): HTMLElement;
         getFloatingBottomContainer(): HTMLElement;
-        private createTemplate();
+        private createOverlayTemplate();
         ensureIndexVisible(index: any): void;
         ensureColIndexVisible(index: any): void;
         showLoading(loading: any): void;
