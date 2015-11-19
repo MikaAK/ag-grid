@@ -4637,8 +4637,9 @@ var ag;
                 var hoverClass = {
                     name: 'ag-hover',
                     add: function (element) {
-                        if (element) {
-                            element.className += " " + this.name;
+                        var classList = element.className.split(' ');
+                        if (element && classList.indexOf(this.name) < 0) {
+                            element.className = classList.concat(this.name).join(' ');
                         }
                     },
                     remove: function (row) {
