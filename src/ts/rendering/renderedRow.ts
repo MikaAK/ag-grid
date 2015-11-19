@@ -373,10 +373,16 @@ module ag.grid {
             var hoverClass = {
               name: 'ag-hover',
               add(element: HTMLDivElement) {
-                element.className += ` ${this.name}`;
+                if (element) {
+                  element.className += ` ${this.name}`;
+                }
               },
 
               remove(row: HTMLDivElement) {
+                if (!row) {
+                  return;
+                }
+
                 var classList = row.className.split(' ');
 
                 classList.splice(classList.indexOf(this.name), 1);
