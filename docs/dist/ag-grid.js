@@ -4637,9 +4637,14 @@ var ag;
                 var hoverClass = {
                     name: 'ag-hover',
                     add: function (element) {
-                        element.className += " " + this.name;
+                        if (element) {
+                            element.className += " " + this.name;
+                        }
                     },
                     remove: function (row) {
+                        if (!row) {
+                            return;
+                        }
                         var classList = row.className.split(' ');
                         classList.splice(classList.indexOf(this.name), 1);
                         row.className = classList.join(' ');
@@ -4652,8 +4657,6 @@ var ag;
                     var rowId = vRow.getAttribute('row');
                     var eBodyRow = hoverClass.getRow(that.eBodyContainer, rowId);
                     var ePinnedRow = hoverClass.getRow(that.ePinnedContainer, rowId);
-                    if (!eBodyRow || !ePinnedRow)
-                        return;
                     if (isHovered) {
                         hoverClass.add(eBodyRow);
                         hoverClass.add(ePinnedRow);

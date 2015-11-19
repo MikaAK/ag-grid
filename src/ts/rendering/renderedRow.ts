@@ -340,10 +340,16 @@ module ag.grid {
             var hoverClass = {
               name: 'ag-hover',
               add(element: HTMLDivElement) {
-                element.className += ` ${this.name}`;
+                if (element) {
+                  element.className += ` ${this.name}`;
+                }
               },
 
               remove(row: HTMLDivElement) {
+                if (!row) {
+                  return;
+                }
+
                 var classList = row.className.split(' ');
 
                 classList.splice(classList.indexOf(this.name), 1);
@@ -359,9 +365,6 @@ module ag.grid {
               var rowId = vRow.getAttribute('row');
               var eBodyRow = hoverClass.getRow(<HTMLDivElement>that.eBodyContainer, rowId);
               var ePinnedRow = hoverClass.getRow(<HTMLDivElement>that.ePinnedContainer, rowId);
-
-              if (!eBodyRow || !ePinnedRow)
-                return
 
               if (isHovered) {
                 hoverClass.add(eBodyRow);
